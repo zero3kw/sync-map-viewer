@@ -1,5 +1,5 @@
 # デモ
-<img src="./assets/demo.gif" width="100%">
+<img src="./assets/usage.gif" width="100%">
 
 # 概要
 - Sync Map Viewerは地図を共同操作するオンラインマップアプリケーションです。
