@@ -1,0 +1,93 @@
+body {
+  padding-top: 50px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+#map {
+  height: calc(100vh - 50px);
+}
+
+#search-container {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.leaflet-touch .leaflet-control-layers-toggle {
+  width: 30px;
+  height: 30px;
+}
+
+/* QRコード表示用のスタイル */
+#qrcode-container {
+  position: absolute;
+  top: 60px;
+  /* QRコードの上からの位置を調整 */
+  right: -50px;
+  /* QRコードを中央に配置 */
+  transform: translateX(-50%);
+  background-color: white;
+  /* 背景色を設定 */
+  padding: 10px;
+  /* 内側の余白を調整 */
+  border: 1px solid #ccc;
+  /* 枠線を追加 */
+  border-radius: 4px;
+  /* 枠線の角を丸くする */
+  z-index: 1000;
+  /* 他の要素より前面に表示 */
+}
+
+#qrcode {
+  width: 100px;
+  /* QRコードの幅を調整 */
+}
+
+.cross {
+  /* 十字アイコン */
+  color: red;
+  background: transparent;
+  position: absolute;
+  /* アイコンを絶対位置に設定 */
+  top: 50%;
+  /* 上からの位置を中央に調整 */
+  left: 50%;
+  /* 左からの位置を中央に調整 */
+  transform: translate(-50%, -50%);
+  /* アイコンを中央に配置 */
+}
+
+.cross::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  /* 線の上端を中央に配置 */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid red;
+  /* 線の太さと色を指定 */
+  width: 20px;
+  /* 線の長さを調整 */
+  height: 0;
+  /* 高さを0に設定 */
+}
+
+.cross::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  /* 線の上端を中央に配置 */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid red;
+  /* 線の太さと色を指定 */
+  width: 0;
+  /* 幅を0に設定 */
+  height: 20px;
+  /* 線の長さを調整 */
+}
