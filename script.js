@@ -72,9 +72,6 @@ const hubNameParam = urlParams.get('hubName');
 const defaultValue = "あいことば";
 const hubName = hubNameParam || defaultValue;
 
-// パラメータの値を表示
-// console.log('hubNameパラメータの値: ' + hubName);
-
 ////////////////////////////////////////////////////////////////////////////////
 //マップタイルの定義
 L.control.layers({
@@ -143,18 +140,18 @@ searchInput.addEventListener('keypress', (e) => {
   }
 });
 
-// GeoJSONからcoordinatesを取得する
+// GeoJSONから先頭要素の座標を [lat, lng] で取得する
 const extractCoordinates = (geojson) => {
-  const features = geojson.map(item => item.geometry.coordinates.reverse());
-  return features[0];
+  const [lng, lat] = geojson[0].geometry.coordinates;
+  return [lat, lng];
 };
 
 
-let cross = L.divIcon({ // CSSを使ったDivIconを作成
+const cross = L.divIcon({
 	className: 'cross',
 	bgPos: [18, 18]
 });
-let crossMark = L.marker(map.getCenter(), { // マーカとして登録
+const crossMark = L.marker(map.getCenter(), {
 	icon: cross, zIndexOffset: 100, interactive: false
 }).addTo(map);
 map.on('move', function() { // mousemoveイベントでマーカを移動
