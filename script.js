@@ -19,7 +19,7 @@ function connect() {
     socket.send(JSON.stringify({ "auth": uid, "password": "" }));
     socket.send(JSON.stringify({ "joinHub": hubName }));
     clearInterval(heartbeatTimer);
-    heartbeatTimer = setInterval(() => safeSend({ "ping": 1 }), 30000);
+    heartbeatTimer = setInterval(() => safeSend({ "ltcy": Date.now() }), 30000);
   };
 
   socket.onmessage = (event) => {
