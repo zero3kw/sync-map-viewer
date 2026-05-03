@@ -28,12 +28,18 @@ function connect() {
     const obj = JSON.parse(event.data);
     if (obj.FROM === uid) return;
 
-    // 他人からの状態リクエストに自分の現在地を返す
+    // 他人からの状態リクエストに自分の現在地とレイヤーを返す
     if (obj.request) {
       const pos = map.getCenter();
-      safeSend({ "toH": hubName, "lat": pos.lat, "lng": pos.lng, "zoom": map.getZoom() });
+      safeSend({
+        "toH": hubName,
+        "lat": pos.lat, "lng": pos.lng, "zoom": map.getZoom(),
+        "layer": currentLayerName()
+      });
       return;
     }
+
+    if (obj.layer) applyLayer(obj.layer);
 
     if (obj.lat && obj.lng && obj.zoom) {
       lastReceived = { lat: obj.lat, lng: obj.lng, zoom: obj.zoom };
@@ -85,23 +91,36 @@ const hubName = hubNameParam || defaultValue;
 
 ////////////////////////////////////////////////////////////////////////////////
 //マップタイルの定義
-L.control.layers({
-  "淡色地図": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
-    attribution: "<a href='http://maps.gsi.go.jp/development/ichiran.html'>地理院タイル</a>"
-  }).addTo(map),
-  "標準地図": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
-    attribution: "<a href='http://maps.gsi.go.jp/development/ichiran.html'>地理院タイル</a>"
-  }),
-  "色別標高図": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png", {
-    attribution: "<a href='http://maps.gsi.go.jp/development/ichiran.html'>地理院タイル</a>"
-  }),
-  "写真": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", {
-    attribution: "<a href='http://maps.gsi.go.jp/development/ichiran.html'>地理院タイル</a>"
-  }),
+const gsiAttribution = "<a href='http://maps.gsi.go.jp/development/ichiran.html'>地理院タイル</a>";
+const tileLayers = {
+  "淡色地図": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", { attribution: gsiAttribution }),
+  "標準地図": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", { attribution: gsiAttribution }),
+  "色別標高図": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png", { attribution: gsiAttribution }),
+  "写真": L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", { attribution: gsiAttribution }),
   "OpenStreetMap": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
   })
-}, null, {position: "topleft"}).addTo(map);
+};
+tileLayers["淡色地図"].addTo(map);
+L.control.layers(tileLayers, null, {position: "topleft"}).addTo(map);
+
+function currentLayerName() {
+  return Object.entries(tileLayers).find(([, l]) => map.hasLayer(l))?.[0];
+}
+
+function applyLayer(name) {
+  const layer = tileLayers[name];
+  if (!layer || map.hasLayer(layer)) return;
+  for (const l of Object.values(tileLayers)) {
+    if (map.hasLayer(l)) map.removeLayer(l);
+  }
+  layer.addTo(map);
+}
+
+map.on('baselayerchange', (e) => {
+  const name = Object.entries(tileLayers).find(([, l]) => l === e.layer)?.[0];
+  if (name) safeSend({ "toH": hubName, "layer": name });
+});
 
 map.setView([35.679531, 139.736914], 14);
 
