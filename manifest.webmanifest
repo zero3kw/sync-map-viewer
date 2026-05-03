@@ -1,0 +1,26 @@
+{
+  "name": "Sync Map Viewer",
+  "short_name": "SyncMap",
+  "description": "地図をリアルタイムに共同操作できるオンラインマップアプリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#198754",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "./assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

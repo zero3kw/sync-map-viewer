@@ -6,7 +6,17 @@ layout: empty
 <head>
 {% include head-custom-google-analytics.html %}
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sync Map Viewer</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#198754">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SyncMap">
+  <link rel="apple-touch-icon" href="./assets/icon.png">
+  <link rel="icon" type="image/svg+xml" href="./assets/icon.svg">
+  <link rel="icon" type="image/png" href="./assets/icon.png">
   <link href="styles.css" rel="stylesheet">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"

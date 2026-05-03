@@ -1,11 +1,15 @@
 body {
-  padding-top: 50px;
+  padding-top: calc(50px + env(safe-area-inset-top, 0px));
   margin-left: 0px;
   margin-right: 0px;
 }
 
+.navbar.fixed-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 #map {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 50px - env(safe-area-inset-top, 0px));
 }
 
 #search-container {
