@@ -43,7 +43,8 @@ function connect() {
 
     if (obj.lat && obj.lng && obj.zoom) {
       lastReceived = { lat: obj.lat, lng: obj.lng, zoom: obj.zoom };
-      map.setView([obj.lat, obj.lng], obj.zoom, { animate: false });
+      lastReceiveTime = Date.now();
+      map.flyTo([obj.lat, obj.lng], obj.zoom);
     }
   };
 
@@ -75,6 +76,8 @@ const map = L.map('map');
 L.control.scale({imperial: false, metric: true}).addTo(map);
 
 let lastReceived = null;
+let lastReceiveTime = 0;
+const RECEIVE_GRACE_MS = 500;
 
 // 現在のURLを取得
 const currentURL = window.location.href;
@@ -130,6 +133,9 @@ map.on('moveend', getMapInfo);
 connect();
 
 function getMapInfo() {
+  // 受信直後の grace 期間中はアニメ中断 echo を吸収
+  if (Date.now() - lastReceiveTime < RECEIVE_GRACE_MS) return;
+
   const pos = map.getCenter();
   const zoom = map.getZoom();
   // 現在位置が最後の受信と一致 → echo なのでスキップ
