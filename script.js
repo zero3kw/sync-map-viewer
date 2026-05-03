@@ -1,4 +1,4 @@
-const uid = Math.random().toString(32).substring(2);
+const uid = crypto.randomUUID();
 const WSS_URL = "wss://cloud.achex.ca/ce5c2a5e724366e353b5ba795de04059";
 let wss;
 let reconnectDelay = 1000;
@@ -20,12 +20,23 @@ function connect() {
     socket.send(JSON.stringify({ "joinHub": hubName }));
     clearInterval(heartbeatTimer);
     heartbeatTimer = setInterval(() => safeSend({ "ltcy": Date.now() }), 30000);
+    // 参加直後にハブの現在状態をリクエスト
+    setTimeout(() => safeSend({ "toH": hubName, "request": 1 }), 500);
   };
 
   socket.onmessage = (event) => {
     const obj = JSON.parse(event.data);
-    if (obj.FROM !== uid && obj.lat && obj.lng && obj.zoom) {
-      latestReceivedTimestamp = Date.now();
+    if (obj.FROM === uid) return;
+
+    // 他人からの状態リクエストに自分の現在地を返す
+    if (obj.request) {
+      const pos = map.getCenter();
+      safeSend({ "toH": hubName, "lat": pos.lat, "lng": pos.lng, "zoom": map.getZoom() });
+      return;
+    }
+
+    if (obj.lat && obj.lng && obj.zoom) {
+      lastReceived = { lat: obj.lat, lng: obj.lng, zoom: obj.zoom };
       map.flyTo([obj.lat, obj.lng], obj.zoom);
     }
   };
@@ -57,7 +68,7 @@ window.addEventListener('online', () => {
 const map = L.map('map');
 L.control.scale({imperial: false, metric: true}).addTo(map);
 
-let latestReceivedTimestamp = Date.now();
+let lastReceived = null;
 
 // 現在のURLを取得
 const currentURL = window.location.href;
@@ -102,9 +113,14 @@ connect();
 function getMapInfo() {
   const pos = map.getCenter();
   const zoom = map.getZoom();
-  if (Date.now() - latestReceivedTimestamp > 1000) {
-    safeSend({ "toH": hubName, "lat": pos.lat, "lng": pos.lng, "zoom": zoom, "timestamp": Date.now() });
+  // 現在位置が最後の受信と一致 → echo なのでスキップ
+  if (lastReceived &&
+      Math.abs(pos.lat - lastReceived.lat) < 1e-7 &&
+      Math.abs(pos.lng - lastReceived.lng) < 1e-7 &&
+      zoom === lastReceived.zoom) {
+    return;
   }
+  safeSend({ "toH": hubName, "lat": pos.lat, "lng": pos.lng, "zoom": zoom });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
