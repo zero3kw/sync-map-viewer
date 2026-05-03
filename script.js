@@ -1,5 +1,58 @@
 const uid = Math.random().toString(32).substring(2);
-const wss = new WebSocket("wss://cloud.achex.ca/ce5c2a5e724366e353b5ba795de04059");
+const WSS_URL = "wss://cloud.achex.ca/ce5c2a5e724366e353b5ba795de04059";
+let wss;
+let reconnectDelay = 1000;
+let heartbeatTimer;
+
+function safeSend(payload) {
+  if (wss && wss.readyState === WebSocket.OPEN) {
+    wss.send(JSON.stringify(payload));
+  }
+}
+
+function connect() {
+  const socket = new WebSocket(WSS_URL);
+  wss = socket;
+
+  socket.onopen = () => {
+    reconnectDelay = 1000;
+    socket.send(JSON.stringify({ "auth": uid, "password": "" }));
+    socket.send(JSON.stringify({ "joinHub": hubName }));
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(() => safeSend({ "ping": 1 }), 30000);
+  };
+
+  socket.onmessage = (event) => {
+    const obj = JSON.parse(event.data);
+    if (obj.FROM !== uid && obj.lat && obj.lng && obj.zoom) {
+      latestReceivedTimestamp = Date.now();
+      map.flyTo([obj.lat, obj.lng], obj.zoom);
+    }
+  };
+
+  socket.onclose = () => {
+    if (socket !== wss) return;
+    clearInterval(heartbeatTimer);
+    setTimeout(connect, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+  };
+
+  socket.onerror = () => socket.close();
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && wss.readyState !== WebSocket.OPEN) {
+    reconnectDelay = 1000;
+    connect();
+  }
+});
+
+window.addEventListener('online', () => {
+  if (wss.readyState !== WebSocket.OPEN) {
+    reconnectDelay = 1000;
+    connect();
+  }
+});
 
 const map = L.map('map');
 L.control.scale({imperial: false, metric: true}).addTo(map);
@@ -47,24 +100,13 @@ map.setView([35.679531, 139.736914], 14);
 map.on('zoomend', getMapInfo);
 map.on('moveend', getMapInfo);
 
-wss.onopen = () => {
-  wss.send(JSON.stringify({ "auth": uid, "password": "" }));
-  wss.send(JSON.stringify({ "joinHub": hubName }));
-};
-
-wss.onmessage = (event) => {
-  const obj = JSON.parse(event.data);
-  if (obj.FROM !== uid && obj.lat && obj.lng && obj.zoom) {
-    latestReceivedTimestamp = Date.now();
-    map.flyTo([obj.lat, obj.lng], obj.zoom);
-  }
-};
+connect();
 
 function getMapInfo() {
   const pos = map.getCenter();
   const zoom = map.getZoom();
   if (Date.now() - latestReceivedTimestamp > 1000) {
-    wss.send(JSON.stringify({ "toH": hubName, "lat": pos.lat, "lng": pos.lng, "zoom": zoom, "timestamp": Date.now() }));
+    safeSend({ "toH": hubName, "lat": pos.lat, "lng": pos.lng, "zoom": zoom, "timestamp": Date.now() });
   }
 }
 

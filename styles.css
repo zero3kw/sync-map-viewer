@@ -30,7 +30,7 @@ body {
 /* QRコード表示用のスタイル */
 #qrcode-container {
   position: absolute;
-  top: 60px;
+  top: calc(70px + env(safe-area-inset-top, 0px));
   /* QRコードの上からの位置を調整 */
   right: -50px;
   /* QRコードを中央に配置 */
