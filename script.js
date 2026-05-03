@@ -43,7 +43,7 @@ function connect() {
 
     if (obj.lat && obj.lng && obj.zoom) {
       lastReceived = { lat: obj.lat, lng: obj.lng, zoom: obj.zoom };
-      map.flyTo([obj.lat, obj.lng], obj.zoom);
+      map.setView([obj.lat, obj.lng], obj.zoom, { animate: false });
     }
   };
 
